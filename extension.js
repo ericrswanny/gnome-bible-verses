@@ -1,6 +1,7 @@
 import GLib from "gi://GLib";
 import St from "gi://St";
 import Gio from "gi://Gio";
+import Clutter from "gi://Clutter";
 
 import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
@@ -9,31 +10,71 @@ import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 
 export default class BibleVerseExtension extends Extension {
   enable() {
-    // Create the button
-    this._indicator = new PanelMenu.Button(0.0, "Bible Verse Indicator", true);
+    // Create indicator button
+    this._button = new PanelMenu.Button(0.0, "Bible Verse Indicator", true);
 
     // Add icon
+    let iconPath = GLib.build_filenamev([this.path, "icons", "bible.svg"]);
+    let gicon = Gio.icon_new_for_string(iconPath);
     let icon = new St.Icon({
-      icon_name: "document-edit-symbolic",
+      gicon: gicon,
       style_class: "system-status-icon"
     });
-    this._indicator.add_child(icon);
+    this._button.add_child(icon);
 
-    // Create menu items
-    this._verseItem = new PopupMenu.PopupMenuItem("Loading verse...");
-    this._verseItem.sensitive = false;
-    this._indicator.menu.addMenuItem(this._verseItem);
+    // Create our own custom menu items
+    let layout = new St.BoxLayout({
+      vertical: true,
+      x_expand: true,
+      y_expand: true
+    });
 
-    this._referenceItem = new PopupMenu.PopupMenuItem("");
-    this._referenceItem.sensitive = false;
-    this._referenceItem.label.set_style("font-style: italic;");
-    this._indicator.menu.addMenuItem(this._referenceItem);
+    // Create verse and reference labels
+    this._verseLabel = new St.Label({
+      text: "Loading verse...",
+      style_class: "verse-text",
+      x_align: Clutter.ActorAlign.START,
+      y_align: Clutter.ActorAlign.CENTER
+    });
+
+    this._referenceLabel = new St.Label({
+      text: "",
+      style_class: "verse-reference",
+      style: "font-style: italic;",
+      x_align: Clutter.ActorAlign.END,
+      y_align: Clutter.ActorAlign.CENTER
+    });
+
+    // Add labels to layout
+    layout.add_child(this._verseLabel);
+    layout.add_child(this._referenceLabel);
+
+    // Create a custom menu item with our layout
+    let menuItem = new St.BoxLayout({
+      style_class: "popup-menu-item",
+      reactive: true,
+      can_focus: true,
+      track_hover: true,
+      x_expand: true,
+      y_expand: true,
+      x_align: Clutter.ActorAlign.FILL
+    });
+    menuItem.add_child(layout);
+
+    // For GNOME 47, we need to add directly to the popup menu's actor
+    if (this._button.menu && this._button.menu.actor) {
+      this._button.menu.actor.add_child(menuItem);
+    } else if (this._button.menu && this._button.menu.box) {
+      this._button.menu.box.add_child(menuItem);
+    } else {
+      console.error("Bible Verse: Cannot find menu element to add items to");
+    }
 
     // Add button to the panel
-    Main.panel.addToStatusArea("bible-verse-indicator", this._indicator);
+    Main.panel.addToStatusArea("bible-verse-indicator", this._button);
 
     // Update verse when menu opens
-    this._indicator.menu.connect("open-state-changed", (menu, isOpen) => {
+    this._button.menu.connect("open-state-changed", (menu, isOpen) => {
       if (isOpen) this._updateVerse();
     });
 
@@ -92,8 +133,12 @@ export default class BibleVerseExtension extends Extension {
   }
 
   _setVerseText(text, reference) {
-    if (this._verseItem) this._verseItem.label.text = text;
-    if (this._referenceItem) this._referenceItem.label.text = reference;
+    if (this._verseLabel) {
+      this._verseLabel.text = text;
+    }
+    if (this._referenceLabel) {
+      this._referenceLabel.text = reference;
+    }
   }
 
   disable() {
@@ -102,12 +147,12 @@ export default class BibleVerseExtension extends Extension {
       this._timeout = null;
     }
 
-    if (this._indicator) {
-      this._indicator.destroy();
-      this._indicator = null;
+    if (this._button) {
+      this._button.destroy();
+      this._button = null;
     }
 
-    this._verseItem = null;
-    this._referenceItem = null;
+    this._verseLabel = null;
+    this._referenceLabel = null;
   }
 }
