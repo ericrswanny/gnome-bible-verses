@@ -1,0 +1,8 @@
+{
+  "name": "Bible Verses",
+  "description": "Display a Bible verse in a popup menu",
+  "uuid": "bible-verses@ericrswanny.github.io",
+  "shell-version": ["45", "46", "47"],
+  "url": "https://github.com/ericrswanny/gnome-bible-verses",
+  "version": 1
+}

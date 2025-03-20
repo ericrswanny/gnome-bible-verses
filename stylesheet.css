@@ -1,0 +1,13 @@
+.bible-verse-indicator-menu-item .popup-menu-ornament {
+  width: 0;
+}
+
+.bible-verse-text {
+  max-width: 300px;
+  line-wrap: true;
+}
+
+.bible-verse-reference {
+  font-style: italic;
+  text-align: right;
+}
