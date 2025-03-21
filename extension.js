@@ -10,9 +10,14 @@ export default class BibleVerseExtension {
     // Create the button for the panel
     this._button = new PanelMenu.Button(0.0, "Bible Verse Indicator");
 
-    // Add an icon to the button
+    // Add your custom Bible icon to the button
+    const iconPath = GLib.build_filenamev([
+      GLib.get_home_dir(),
+      ".local/share/gnome-shell/extensions/bible-verses@ericrswanny.github.io/icons/bible.svg"
+    ]);
+    const gicon = Gio.icon_new_for_string(iconPath);
     const icon = new St.Icon({
-      icon_name: "face-smile-symbolic", // Replace with your Bible icon if needed
+      gicon: gicon,
       style_class: "system-status-icon"
     });
     this._button.add_child(icon);
