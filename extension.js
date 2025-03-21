@@ -7,6 +7,11 @@ import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
 export default class BibleVerseExtension {
   enable() {
+    // Initialize theme settings
+    this._themeSettings = new Gio.Settings({
+      schema: "org.gnome.desktop.interface"
+    });
+
     // Create the button for the panel
     this._button = new PanelMenu.Button(0.0, "Bible Verse Indicator");
 
@@ -16,11 +21,22 @@ export default class BibleVerseExtension {
       ".local/share/gnome-shell/extensions/bible-verses@ericrswanny.github.io/icons/bible.svg"
     ]);
     const gicon = Gio.icon_new_for_string(iconPath);
-    const icon = new St.Icon({
+    this.icon = new St.Icon({
       gicon: gicon,
       style_class: "system-status-icon"
     });
-    this._button.add_child(icon);
+    this._button.add_child(this.icon);
+
+    // Set the initial icon color based on the current theme
+    this._updateIconColor();
+
+    // Listen for theme changes
+    this._themeChangeSignal = this._themeSettings.connect(
+      "changed::gtk-theme",
+      () => {
+        this._updateIconColor();
+      }
+    );
 
     // Add a menu item to display the verse
     this._verseMenuItem = new PopupMenu.PopupMenuItem("Loading verse...");
@@ -38,6 +54,15 @@ export default class BibleVerseExtension {
       this._updateVerse();
       return GLib.SOURCE_CONTINUE;
     });
+  }
+
+  _updateIconColor() {
+    // Get the current theme
+    const theme = this._themeSettings.get_string("gtk-theme");
+    const isDarkMode = theme.includes("dark"); // Check if the theme name includes "dark"
+    const iconColor = isDarkMode ? "#ffffff" : "#000000"; // White for dark mode, black for light mode
+    this.icon.set_style(`color: ${iconColor};`);
+    log(`Icon color updated. Dark mode enabled? ${isDarkMode}`);
   }
 
   _updateVerse() {
@@ -95,6 +120,12 @@ export default class BibleVerseExtension {
     if (this._timeout) {
       GLib.source_remove(this._timeout);
       this._timeout = null;
+    }
+
+    // Disconnect the theme change signal
+    if (this._themeChangeSignal) {
+      this._themeSettings.disconnect(this._themeChangeSignal);
+      this._themeChangeSignal = null;
     }
 
     // Destroy the button

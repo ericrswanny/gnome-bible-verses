@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg fill="#000000" height="800px" width="800px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+<svg fill="currentColor" height="800px" width="800px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
 	 viewBox="0 0 58 58" xml:space="preserve">
 <g>
 	<path d="M25.051,47H33V26h8v-8h-8v-8h-8v8h-8v8h8.002L25.051,47z M19,20h8v-8h4v8h8v4h-8v21h-3.953l-0.049-21H19V20z"/>
@@ -20,3 +20,4 @@
 		c0.041,0.009,0.082,0.017,0.123,0.024C11.501,7.97,11.745,8,12,8h36V49z"/>
 </g>
 </svg>
+
