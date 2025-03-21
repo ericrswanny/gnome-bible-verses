@@ -1,84 +1,32 @@
-import GLib from "gi://GLib";
-import Gio from "gi://Gio";
-
-import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
+import GObject from "gi://GObject";
+import St from "gi://St";
+import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
+import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
-import { BibleVerseContainer } from "./container.js";
-
-export default class BibleVerseExtension extends Extension {
+export default class TestExtension {
   enable() {
-    // Create the custom container
-    this._container = new BibleVerseContainer(0.0, "Bible Verse Indicator");
+    this._button = new PanelMenu.Button(0.0, "Test Button");
 
-    // Add the container to the panel
-    Main.panel.addToStatusArea("bible-verse-indicator", this._container);
-
-    // Update the verse initially
-    this._updateVerse();
-
-    // Set up periodic updates (every 5 minutes)
-    this._timeout = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 300, () => {
-      this._updateVerse();
-      return GLib.SOURCE_CONTINUE;
+    // Add an icon
+    const icon = new St.Icon({
+      icon_name: "face-smile-symbolic",
+      style_class: "system-status-icon"
     });
-  }
+    this._button.add_child(icon);
 
-  _updateVerse() {
-    try {
-      // Get verses from the file
-      const versesFile = Gio.File.new_for_path(
-        GLib.build_filenamev([this.path, "verses.txt"])
-      );
+    // Add a test item to the menu
+    const testItem = new PopupMenu.PopupMenuItem("Test Item");
+    this._button.menu.addMenuItem(testItem);
 
-      if (!versesFile.query_exists(null)) {
-        this._container.setVerse("Verses file not found.");
-        return;
-      }
-
-      const [success, contents] = versesFile.load_contents(null);
-      if (!success) {
-        this._container.setVerse("Could not load verses.");
-        return;
-      }
-
-      // Parse the verses
-      const versesText = new TextDecoder().decode(contents);
-      const verses = versesText
-        .split("\n")
-        .filter((line) => line.trim() !== "");
-
-      if (verses.length === 0) {
-        this._container.setVerse("No verses found in file.");
-        return;
-      }
-
-      // Pick a random verse
-      const verse = verses[Math.floor(Math.random() * verses.length)];
-      const parts = verse.split("|").map((part) => part.trim());
-
-      if (parts.length >= 2) {
-        this._container.setVerse(`${parts[0]} (${parts[1]})`);
-      } else {
-        this._container.setVerse(verse);
-      }
-    } catch (e) {
-      console.error(`Bible Verse Error: ${e}`);
-      this._container.setVerse("Error loading verse.");
-    }
+    // Add the button to the panel
+    Main.panel.addToStatusArea("test-button", this._button);
   }
 
   disable() {
-    // Remove periodic updates
-    if (this._timeout) {
-      GLib.source_remove(this._timeout);
-      this._timeout = null;
-    }
-
-    // Destroy the container
-    if (this._container) {
-      this._container.destroy();
-      this._container = null;
+    if (this._button) {
+      this._button.destroy();
+      this._button = null;
     }
   }
 }
