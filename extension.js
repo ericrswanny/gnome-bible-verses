@@ -57,12 +57,23 @@ export default class BibleVerseExtension {
   }
 
   _updateIconColor() {
-    // Get the current theme
-    const theme = this._themeSettings.get_string("gtk-theme");
-    const isDarkMode = theme.includes("dark"); // Check if the theme name includes "dark"
-    const iconColor = isDarkMode ? "#ffffff" : "#000000"; // White for dark mode, black for light mode
-    this.icon.set_style(`color: ${iconColor};`);
-    log(`Icon color updated. Dark mode enabled? ${isDarkMode}`);
+    // Get the current color scheme
+    const colorScheme = this._themeSettings.get_enum("color-scheme");
+    const isDarkMode = colorScheme === 1; // 0 = light mode, 1 = dark mode
+
+    // Choose the appropriate SVG file
+    const iconPath = GLib.build_filenamev([
+      GLib.get_home_dir(),
+      ".local/share/gnome-shell/extensions/bible-verses@ericrswanny.github.io/icons",
+      isDarkMode ? "bible-dark.svg" : "bible-light.svg"
+    ]);
+
+    // Load the new icon
+    const gicon = Gio.icon_new_for_string(iconPath);
+    this.icon.set_gicon(gicon); // Set the new icon
+    log(
+      `Current color scheme: ${colorScheme}, Dark mode: ${isDarkMode}, Icon path: ${iconPath}`
+    );
   }
 
   _updateVerse() {
